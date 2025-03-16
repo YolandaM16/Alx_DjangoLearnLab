@@ -7,11 +7,12 @@ class Author(models.Model):
     def _str_(self):
         return self.name
     
+
 class Book(models.Model):
     title = models.CharField(max_length=255)
     publication_date = models.IntegerField()
     author = models.ForeignKey(Author, on_delete=models.CASCADE, related_name='books')
 
+
     def _str_(self):
         return self.title
-    

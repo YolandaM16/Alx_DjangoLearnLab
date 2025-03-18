@@ -6,6 +6,7 @@ from .models import Book
 class BookAPITestCase(TestCase):
     def setUp(self):
         self.client = APIClient()
+        self.client.login(username="Mookie", email="mooksa@gmail.com")
         self.book_data = {'title': 'HTGAWM', 'author': 'Viola Davis', 'isbn': 20241117}
         self.book = Book.objects.create(**self.book_data)
 

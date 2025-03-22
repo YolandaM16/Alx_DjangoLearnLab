@@ -33,7 +33,11 @@ class ProfileUpdateForm(forms.ModelForm):
         fields = ['bio', 'profile_picture', 'website']
 
 class PostForm(forms.ModelForm):
+    tags = forms.CharField(
+        required=False
+        widget=TagWidget()
     content = forms.CharField(widget=CKEditorUploadingWidget())
+    )
     
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop('user', None)

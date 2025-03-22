@@ -3,6 +3,8 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin,UserPassesTestMixin
 from django.contrib.auth import login, logout
 from .forms import CustomUserCreationForm
+from .models import Comment
+from django.urls import reverse_lazy
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 from .models import Post
 from .forms import UserUpdateForm, ProfileUpdateForm
@@ -24,6 +26,26 @@ def register(request):
         form =CustomUserCreationForm ()
     return render(request, 'blog/register.html', {'form': form})
 
+class CommentCreateView(CreateView):
+    model = Comment
+    fields = ['content']
+    template_name = 'blog/comment_form.html'
+
+    def form_valid(self, form):
+        form.instance.author = self.requst.user
+        return super().form_valid(form)
+    
+
+class CommentUpdateView(UpdateView):
+    models = Comment
+    fields = ['content']
+    template_name = 'blog/comment_form.html'
+
+class CommentDeleteView(DeleteView):
+    model = Comment
+    fields = ['content']
+    template_name = 'blog/comment_confirm_delete.html'
+    success_url = reverse_lazy('post-list')
 
 @login_required
 def profile(request):

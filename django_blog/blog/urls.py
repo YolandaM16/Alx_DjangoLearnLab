@@ -1,6 +1,7 @@
 from django.urls import path
 from django.contrib.auth import views as auth_views
 from .views import register, profile
+from .views import PostByTagListView
 from .views import CommentCreateView, CommentUpdateView, CommentDeleteView
 from .views import (
     RegisterView,
@@ -38,4 +39,5 @@ urlpatterns = [
     # URL for deleting a comment (optional, but recommended)
     path('comment/<int:pk>/delete/', CommentDeleteView.as_view(), name='comment-delete'),
 
+    path('tags/<slug:tag_slug>/', PostByTagListView.as_view(), name='post_by_tag'),
 ]

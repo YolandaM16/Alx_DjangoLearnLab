@@ -4,12 +4,23 @@ from django.contrib.auth.mixins import LoginRequiredMixin,UserPassesTestMixin
 from django.contrib.auth import login, logout
 from .forms import CustomUserCreationForm
 from .models import Comment
+from django.db.models import Q
 from django.urls import reverse_lazy
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
-from .models import Post
+from .models import Post, Category, Tag
+from .forms import PostForm, CommentForm
 from .forms import UserUpdateForm, ProfileUpdateForm
 
 # Create your views here.
+
+def search_post(request):
+    query = request.GET.get('q', '')
+    result = []
+
+    if query:
+        results = ["Post.objects.filter", "title__icontains", "tags__name__icontains", "content__icontains"]
+
+
 
 def post_list(request):
     return render(request, 'blog/post_list.html')

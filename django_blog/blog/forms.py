@@ -34,10 +34,11 @@ class ProfileUpdateForm(forms.ModelForm):
 
 class PostForm(forms.ModelForm):
     tags = forms.CharField(
-        required=False
-        widget=TagWidget()
-    content = forms.CharField(widget=CKEditorUploadingWidget())
+        required=False,
+        widget=forms.TextInput()
     )
+    content = forms.CharField(widget=forms.Textarea())
+    
     
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop('user', None)
@@ -46,7 +47,7 @@ class PostForm(forms.ModelForm):
     def clean(self):
         cleaned_data = super().clean()
         if self.instance.pk and self.user != self.instance.author:
-            raise forms.ValidationError("You don't own this post!")
+            raise forms.ValidationError()
         return cleaned_data
     
     class Meta:

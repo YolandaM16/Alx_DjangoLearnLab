@@ -35,9 +35,9 @@ class ProfileUpdateForm(forms.ModelForm):
 class PostForm(forms.ModelForm):
     tags = forms.CharField(
         required=False,
-        widget=forms.TextInput()
+        widget=forms.TagWidget()
     )
-    content = forms.CharField(widget=forms.Textarea())
+    content = forms.CharField(widget=forms.TagWidget())
     
     
     def __init__(self, *args, **kwargs):

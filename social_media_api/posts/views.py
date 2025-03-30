@@ -1,7 +1,12 @@
 from django.shortcuts import render
 from rest_framework import viewsets, permissions, generics
-from .models import Post, Comment
-from rest_framework import filters
+from .models import Post, Comment, Like
+from rest_framework.response import Response
+from .serializers import LikeSerializer
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.views import APIView
+from notifications.utils import create_notification
+from rest_framework import filters, status
 from .serializers import PostSerializer, CommentSerializer
 
 # Create your views here.
@@ -43,3 +48,28 @@ class FeedView(generics.ListAPIView):
         followed_users = user.following.all() 
         return Post.objects.filter(author__in=followed_users).order_by('-created_at')
         return Post.objects.filter(author__in=following_users).order_by('-created_at')
+    
+
+class LikePostView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, pk):
+        post = Post.objects.get(pk=pk)
+        like, created = Like.objects.get_or_create(user=request.user, post=post)
+
+        if not created:
+            return Response({"detail": "You have already liked this post."}, status=status.HTTP_400_BAD_REQUEST)
+
+        create_notification(post.author, request.user, "liked your post", post)
+        return Response({"detail": "Post liked successfully."}, status=status.HTTP_201_CREATED)
+
+class UnlikePostView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, pk):
+        try:
+            like = Like.objects.get(user=request.user, post_id=pk)
+            like.delete()
+            return Response({"detail": "Post unliked successfully."}, status=status.HTTP_204_NO_CONTENT)
+        except Like.DoesNotExist:
+            return Response({"detail": "Like not found."}, status=status.HTTP_404_NOT_FOUND)

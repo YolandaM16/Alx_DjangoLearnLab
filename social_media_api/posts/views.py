@@ -6,7 +6,9 @@ from .serializers import LikeSerializer
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from notifications.utils import create_notification
+from django.shortcuts import get_object_or_404
 from rest_framework import filters, status
+from notifications.models import Notification
 from .serializers import PostSerializer, CommentSerializer
 
 # Create your views here.
@@ -50,26 +52,36 @@ class FeedView(generics.ListAPIView):
         return Post.objects.filter(author__in=following_users).order_by('-created_at')
     
 
-class LikePostView(APIView):
+        
+class LikePostView(generics.GenericAPIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, pk):
-        post = Post.objects.get(pk=pk)
+        post = get_object_or_404(Post, pk=pk) 
         like, created = Like.objects.get_or_create(user=request.user, post=post)
 
         if not created:
             return Response({"detail": "You have already liked this post."}, status=status.HTTP_400_BAD_REQUEST)
 
-        create_notification(post.author, request.user, "liked your post", post)
+        # Create a notification
+        Notification.objects.create(
+            recipient=post.author,
+            actor=request.user,
+            verb="liked your post",
+            target=post
+        )
+
         return Response({"detail": "Post liked successfully."}, status=status.HTTP_201_CREATED)
 
-class UnlikePostView(APIView):
+class UnlikePostView(generics.GenericAPIView):
     permission_classes = [IsAuthenticated]
 
     def delete(self, request, pk):
-        try:
-            like = Like.objects.get(user=request.user, post_id=pk)
-            like.delete()
-            return Response({"detail": "Post unliked successfully."}, status=status.HTTP_204_NO_CONTENT)
-        except Like.DoesNotExist:
+        post = get_object_or_404(Post, pk=pk) 
+        like = Like.objects.filter(user=request.user, post=post).first()
+
+        if not like:
             return Response({"detail": "Like not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        like.delete()
+        return Response({"detail": "Post unliked successfully."}, status=status.HTTP_204_NO_CONTENT)
